@@ -7,7 +7,7 @@ import { SystemHealth } from '../models';
 import { DtoValidation } from '../pipes';
 import { HealthService } from '../services';
 
-@Controller()
+@Controller({ version: '1' })
 export class HealthController {
   @Logger() private logger: Logger;
 

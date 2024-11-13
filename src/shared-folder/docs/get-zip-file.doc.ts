@@ -1,4 +1,4 @@
-import { applyDecorators, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { applyDecorators, HttpCode, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -6,14 +6,13 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../auth/guards';
 import { NotFound } from '../../common/exceptions';
 import { ZipFilesDto } from '../dto';
 import { SharedFolderRoute } from '../enums';
+
 export function GetZipFileDocs() {
   return applyDecorators(
     Post(SharedFolderRoute.zipFile),
-    UseGuards(JwtAuthGuard),
     HttpCode(200),
     ApiOperation({
       summary: `POST ${SharedFolderRoute.zipFile}`,

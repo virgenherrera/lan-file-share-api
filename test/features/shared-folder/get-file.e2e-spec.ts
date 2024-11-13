@@ -3,7 +3,6 @@ import { NestApplication } from '@nestjs/core';
 import { SharedFolderRoute } from '../../../src/shared-folder/enums';
 import { getDownloadableFileHeaders } from '../../matchers';
 import {
-  AuthUtil,
   dropSharedFiles,
   initSharedFiles,
   mockSharedFiles,
@@ -13,7 +12,6 @@ import {
 describe(`e2e:(GET)${SharedFolderRoute.fileStream}`, () => {
   const enum should {
     initTestContext = 'Should test Context be properly initialized.',
-    throw401 = 'Should GET 401 when a request with no token occurs.',
     throw404 = 'Should GET 404 on non-existent file.',
     getFile = 'Should GET existent file properly.',
   }
@@ -36,24 +34,10 @@ describe(`e2e:(GET)${SharedFolderRoute.fileStream}`, () => {
     expect(testCtx.app).toBeInstanceOf(NestApplication);
   });
 
-  it(should.throw401, async () => {
-    const path = 'path/to/non/existent/file.ext';
-    const { status, body } = await testCtx.request
-      .get(SharedFolderRoute.fileStream)
-      .query({ path });
-
-    expect(status).toBe(401);
-    expect(body).toMatchObject({
-      message: 'Unauthorized',
-    });
-  });
-
   it(should.throw404, async () => {
-    const accessToken = await AuthUtil.getToken(testCtx);
     const path = 'path/to/non/existent/file.ext';
     const { status, body } = await testCtx.request
       .get(SharedFolderRoute.fileStream)
-      .set(accessToken)
       .query({ path });
 
     expect(status).toBe(404);
@@ -65,13 +49,11 @@ describe(`e2e:(GET)${SharedFolderRoute.fileStream}`, () => {
   });
 
   it(should.getFile, async () => {
-    const accessToken = await AuthUtil.getToken(testCtx);
     const [firstFile] = mockSharedFiles;
     const { filename } = firstFile;
 
     const { status, headers } = await testCtx.request
       .get(SharedFolderRoute.fileStream)
-      .set(accessToken)
       .query({ path: filename });
     const fileHeadersMatcher = getDownloadableFileHeaders(filename);
 

@@ -1,4 +1,4 @@
-import { applyDecorators, Get, UseGuards } from '@nestjs/common';
+import { applyDecorators, Get } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiOkResponse,
@@ -7,7 +7,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '../../auth/guards';
 import { NotFound } from '../../common/exceptions';
 import { GetFileStreamQueryDto } from '../dto';
 import { SharedFolderRoute } from '../enums';
@@ -15,7 +14,6 @@ import { SharedFolderRoute } from '../enums';
 export function GetFileDocs() {
   return applyDecorators(
     Get(SharedFolderRoute.fileStream),
-    UseGuards(JwtAuthGuard),
     ApiOperation({
       summary: `GET ${SharedFolderRoute.fileStream}`,
       description: 'Get a file to download.',

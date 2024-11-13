@@ -20,8 +20,8 @@
     "Hugo Virgen (https://github.com/virgenherrera)"
   ],
   "engines": {
-    "node": ">=20.11.1 <21",
-    "pnpm": "8.15.4"
+    "node": ">=22.11.0 <23",
+    "pnpm": ">=9.13.0"
   },
   "scripts": {
     "test": "run-s -l cleanup test:* build:*",

@@ -21,7 +21,7 @@ import {
   StreamableZipFileService,
 } from '../services';
 
-@Controller()
+@Controller({ version: '1' })
 export class SharedFolderController {
   @Logger() private logger: Logger;
 

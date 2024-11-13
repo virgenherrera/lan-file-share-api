@@ -80,8 +80,7 @@ export class HttpAppBuilder {
   private async setVersioning() {
     this.logger.log(`setting app version "HEADER"`);
     HttpAppBuilder.app.enableVersioning({
-      type: VersioningType.HEADER,
-      header: 'X-API-Version',
+      type: VersioningType.URI,
     });
   }
 

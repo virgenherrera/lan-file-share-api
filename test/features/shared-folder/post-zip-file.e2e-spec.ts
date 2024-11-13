@@ -1,7 +1,6 @@
 import { NestApplication } from '@nestjs/core';
 import { SharedFolderRoute } from '../../../src/shared-folder/enums';
 import {
-  AuthUtil,
   dropSharedFiles,
   initSharedFiles,
   mockSharedFiles,
@@ -10,7 +9,6 @@ import {
 
 const enum should {
   initTestContext = 'Should test Context be properly initialized.',
-  throw401 = 'Should GET 401 when a request with no token occurs.',
   throw404Files = 'Should throw 404 when any of the files does not exists.',
   postZipFile = 'Should respond with Zipped file properly.',
 }
@@ -34,28 +32,12 @@ describe(`e2e:(POST)${SharedFolderRoute.zipFile}`, () => {
     expect(testCtx.app).toBeInstanceOf(NestApplication);
   });
 
-  it(should.throw401, async () => {
-    const reqBody = {
-      filePaths: ['non-existent-file-01.txt'],
-    };
-    const { status, body } = await testCtx.request
-      .post(SharedFolderRoute.zipFile)
-      .send(reqBody);
-
-    expect(status).toBe(401);
-    expect(body).toMatchObject({
-      message: 'Unauthorized',
-    });
-  });
-
   it(should.throw404Files, async () => {
-    const accessToken = await AuthUtil.getToken(testCtx);
     const reqBody = {
       filePaths: ['non-existent-file-01.txt'],
     };
     const { status, body } = await testCtx.request
       .post(SharedFolderRoute.zipFile)
-      .set(accessToken)
       .send(reqBody);
 
     expect(status).toBe(404);
@@ -67,13 +49,11 @@ describe(`e2e:(POST)${SharedFolderRoute.zipFile}`, () => {
   });
 
   it(should.postZipFile, async () => {
-    const accessToken = await AuthUtil.getToken(testCtx);
     const reqBody = {
       filePaths: mockSharedFiles.map(({ filename }) => filename),
     };
     const { status, headers } = await testCtx.request
       .post(SharedFolderRoute.zipFile)
-      .set(accessToken)
       .send(reqBody);
 
     expect(status).toBe(200);

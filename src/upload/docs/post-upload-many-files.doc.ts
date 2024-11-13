@@ -1,9 +1,4 @@
-import {
-  applyDecorators,
-  Post,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { applyDecorators, Post, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
@@ -15,7 +10,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '../../auth/guards';
 import { BadRequest } from '../../common/exceptions';
 import { UploadFilesDto } from '../dto';
 import { UploadRoute } from '../enums';
@@ -24,7 +18,6 @@ import { UploadManyResponse } from '../models';
 export function PostUploadManyFilesDocs() {
   return applyDecorators(
     Post(UploadRoute.files),
-    UseGuards(JwtAuthGuard),
     ApiOperation({
       summary: `POST ${UploadRoute.files}`,
       description:

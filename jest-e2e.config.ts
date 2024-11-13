@@ -11,6 +11,9 @@ export const e2eConfig: typeof BaseConfig = {
     '!src/utils/**',
   ],
   coverageDirectory: 'coverage/e2e',
+  coverageThreshold: {
+    global: { branches: 80, functions: 80, lines: 80, statements: 80 },
+  },
   maxWorkers: 1,
   rootDir: './',
   testPathIgnorePatterns: [
