@@ -1,24 +1,20 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  StreamableFile,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, StreamableFile } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { basename, normalize, resolve } from 'path';
 
-import { SharedFolderPath } from '../../common/decorators';
+import { Logger, SharedFolderPath } from '../../common/decorators';
 import { MimeService } from '../../common/services';
 import { SharedFolderService } from '../../shared-folder/services';
 
 @Injectable()
 export class DownloadService {
+  @Logger() private readonly logger: Logger;
+
   constructor(
     private readonly sharedFolderService: SharedFolderService,
     @SharedFolderPath()
     private readonly sharedFolderPath: string,
     private readonly mimeService: MimeService,
-    private readonly logger: Logger,
   ) {}
 
   async getStreamableFile(filename: string): Promise<StreamableFile> {

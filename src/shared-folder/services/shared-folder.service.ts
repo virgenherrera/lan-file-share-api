@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { existsSync } from 'fs';
@@ -9,16 +8,27 @@ import { readdir, stat } from 'fs/promises';
 import { join, parse as pathParse, resolve } from 'path';
 
 import { PagedResults } from '../../application/dto';
-import { SharedFolderPath } from '../../common/decorators';
+import { Logger, SharedFolderPath } from '../../common/decorators';
 import { PaginationUtil } from '../../utils';
 import { FileDto, FolderDto, GetSharedFolderQueryDto } from '../dto';
 
 @Injectable()
 export class SharedFolderService {
+  @Logger() private readonly logger: Logger;
+  private readonly filesToIgnore = new Set([
+    'desktop.ini',
+    'thumbs.db',
+    '.DS_Store',
+    '.directory',
+    'Icon\r',
+    '.Spotlight-V100',
+    '.Trashes',
+    '.localized',
+  ]);
+
   constructor(
     @SharedFolderPath()
     private readonly sharedFolderPath: string,
-    private readonly logger: Logger,
   ) {}
 
   async getPagedFolderInfo(
@@ -27,7 +37,10 @@ export class SharedFolderService {
     this.logger.log(`Getting paginated shared folder content: ${query.path}`);
 
     const fullPath = this.ensurePath(query.path);
-    const directoryItems = await readdir(fullPath);
+    const directoryRawItems = await readdir(fullPath);
+    const directoryItems = directoryRawItems.filter(
+      (el) => !this.filesToIgnore.has(el),
+    );
     const { length: totalRecords } = directoryItems;
     const startIndex = (query.page - 1) * query.perPage;
     const endIndex = startIndex + query.perPage;
@@ -48,14 +61,16 @@ export class SharedFolderService {
       if (itemStats.isDirectory()) {
         results.push({ type: 'folder', name: urlPath });
       } else {
-        results.push({
+        const element: FileDto = {
           type: 'file',
           fileName: parsedPath.base,
           path: urlPath,
           createdAt: itemStats.birthtime,
           updatedAt: itemStats.mtime,
           size: this.byteLengthHumanize(itemStats.size),
-        } as FileDto);
+        };
+
+        results.push(element);
       }
     }
 

@@ -1,15 +1,16 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { existsSync } from 'fs';
 import { mkdir, rename, unlink } from 'fs/promises';
 import { join } from 'path';
 
+import { Logger } from '../../common/decorators';
 import { UploadManyResponse, UploadPathDto, UploadResponse } from '../dto';
 import { IncomingFile, SoftBatchCreated } from '../types';
 
 @Injectable()
 export class UploadService {
-  constructor(private readonly logger: Logger) {}
+  @Logger() private readonly logger: Logger;
 
   async batchCreate(
     files: IncomingFile[],

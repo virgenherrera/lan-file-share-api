@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Logger,
   Post,
   UploadedFile,
   UploadedFiles,
@@ -15,6 +14,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { Logger } from '../../common/decorators';
 import { PostUploadManyFilesDocs } from '../docs';
 import { UploadFileDto, UploadManyResponse, UploadResponse } from '../dto';
 import { RequiredFileInterceptor } from '../interceptors';
@@ -24,10 +24,9 @@ import { IncomingFile } from '../types';
 @ApiTags('upload')
 @Controller('upload')
 export class UploadController {
-  constructor(
-    private readonly uploadService: UploadService,
-    private readonly logger: Logger,
-  ) {}
+  @Logger() private readonly logger: Logger;
+
+  constructor(private readonly uploadService: UploadService) {}
 
   @Post('file')
   @UseInterceptors(

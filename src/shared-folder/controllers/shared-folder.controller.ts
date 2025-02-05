@@ -1,7 +1,8 @@
-import { Controller, Logger, Query } from '@nestjs/common';
+import { Controller, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { PagedResults } from '../../application/dto';
+import { Logger } from '../../common/decorators';
 import { GetSharedFolderDocs } from '../docs';
 import { FileDto, FolderDto, GetSharedFolderQueryDto } from '../dto';
 import { SharedFolderService } from '../services';
@@ -9,10 +10,9 @@ import { SharedFolderService } from '../services';
 @ApiTags('/shared-folder')
 @Controller('/shared-folder')
 export class SharedFolderController {
-  constructor(
-    private readonly sharedFolderService: SharedFolderService,
-    private readonly logger: Logger,
-  ) {}
+  @Logger() private readonly logger: Logger;
+
+  constructor(private readonly sharedFolderService: SharedFolderService) {}
 
   @GetSharedFolderDocs()
   async getPagedFolderInfo(
