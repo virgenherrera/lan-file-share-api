@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
 
-import { AppMulterOptions } from '../../src/upload/imports';
+import { SharedFolderPathProvider } from '../../src/common/providers';
 import { TestContext } from './test-context.util';
 
 const mockSharedNestedFolders = ['nested-01', 'nested-02', 'nested-03'];
@@ -38,7 +38,7 @@ async function createFiles(path: string) {
 }
 
 export async function initSharedFiles(testCtx: TestContext) {
-  const { sharedFolderPath } = testCtx.app.get(AppMulterOptions);
+  const sharedFolderPath = testCtx.app.get(SharedFolderPathProvider.provide);
   const paths = [
     sharedFolderPath,
     ...mockSharedNestedFolders.map((p) => join(sharedFolderPath, p)),
@@ -50,7 +50,7 @@ export async function initSharedFiles(testCtx: TestContext) {
 }
 
 export function dropSharedFiles(testCtx: TestContext) {
-  const { sharedFolderPath } = testCtx.app.get(AppMulterOptions);
+  const sharedFolderPath = testCtx.app.get(SharedFolderPathProvider.provide);
 
   return rm(sharedFolderPath, { recursive: true, maxRetries: 10 });
 }

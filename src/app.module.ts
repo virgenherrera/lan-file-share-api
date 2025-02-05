@@ -7,9 +7,9 @@ import {
   PagedResultsInterceptorProvider,
 } from './application/providers';
 import { CommonModule } from './common/common.module';
+import { DownloadModule } from './download/download.module';
 import { SharedFolderModule } from './shared-folder/shared-folder.module';
 import { UploadModule } from './upload/upload.module';
-import { DownloadModule } from './download/download.module';
 
 @Module({
   imports: [

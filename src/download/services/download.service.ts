@@ -7,15 +7,16 @@ import {
 import { createReadStream } from 'fs';
 import { basename, normalize, resolve } from 'path';
 
+import { SharedFolderPath } from '../../common/decorators';
 import { MimeService } from '../../common/services';
 import { SharedFolderService } from '../../shared-folder/services';
-import { AppMulterOptions } from '../../upload/imports';
 
 @Injectable()
 export class DownloadService {
   constructor(
     private readonly sharedFolderService: SharedFolderService,
-    private readonly appMulterOptions: AppMulterOptions,
+    @SharedFolderPath()
+    private readonly sharedFolderPath: string,
     private readonly mimeService: MimeService,
     private readonly logger: Logger,
   ) {}
@@ -49,7 +50,7 @@ export class DownloadService {
    * @description Returns a fully resolved path while preventing traversal attacks
    */
   private getResolvedPath(filename: string): string {
-    const { sharedFolderPath: baseDir } = this.appMulterOptions;
+    const { sharedFolderPath: baseDir } = this;
     const resolvedPath = resolve(baseDir, normalize(filename));
 
     this.logger.verbose(`Base directory for downloads: ${baseDir}`);

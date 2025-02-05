@@ -3,12 +3,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 
 import { MockLoggerProvider } from '../../application/__mocks__';
+import { SharedFolderPathProvider } from '../../common/providers';
 import {
   mockMimeService,
   MockMimeServiceProvider,
 } from '../../common/services/__mocks__';
 import { SharedFolderService } from '../../shared-folder/services';
-import { AppMulterOptions } from '../../upload/imports';
 import { DownloadService } from './download.service';
 
 describe(`UT:${DownloadService.name}`, () => {
@@ -25,9 +25,6 @@ describe(`UT:${DownloadService.name}`, () => {
     ensurePath: jest.fn(),
     parseFileStats: jest.fn(),
   };
-  const mockAppMulterOptions = {
-    sharedFolderPath: '/base/directory',
-  };
 
   let service: DownloadService;
 
@@ -39,8 +36,8 @@ describe(`UT:${DownloadService.name}`, () => {
           useValue: mockSharedFolderService,
         },
         {
-          provide: AppMulterOptions,
-          useValue: mockAppMulterOptions,
+          provide: SharedFolderPathProvider.provide,
+          useValue: '/base/directory',
         },
         MockMimeServiceProvider,
         MockLoggerProvider,

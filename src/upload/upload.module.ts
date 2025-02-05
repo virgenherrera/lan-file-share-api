@@ -6,7 +6,7 @@ import { UploadService } from './services';
 
 @Module({
   imports: [AppMulterOptions.registerAsync],
-  providers: [AppMulterOptions, UploadService],
+  providers: [UploadService],
   controllers: [UploadController],
 })
 export class UploadModule {}

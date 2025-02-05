@@ -5,7 +5,7 @@ import * as path from 'path';
 
 import { MockLoggerProvider } from '../../application/__mocks__';
 import { PagedResults } from '../../application/dto';
-import { AppMulterOptions } from '../../upload/imports';
+import { SharedFolderPathProvider } from '../../common/providers';
 import { GetSharedFolderQueryDto } from '../dto';
 import { SharedFolderService } from './shared-folder.service';
 
@@ -24,10 +24,8 @@ describe(`UT:${SharedFolderService.name}`, () => {
       providers: [
         MockLoggerProvider,
         {
-          provide: AppMulterOptions,
-          useValue: {
-            sharedFolderPath: 'mock-path',
-          },
+          provide: SharedFolderPathProvider.provide,
+          useValue: 'mock-path',
         },
         SharedFolderService,
       ],

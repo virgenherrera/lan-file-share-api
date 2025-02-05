@@ -6,6 +6,7 @@ export class UploadPathDto {
     description: 'An optional path where to store the new file or files.',
     example: 'images/photos',
     default: '',
+    type: 'string',
   })
   @IsOptional()
   @IsString()

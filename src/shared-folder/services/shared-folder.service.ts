@@ -9,14 +9,15 @@ import { readdir, stat } from 'fs/promises';
 import { join, parse as pathParse, resolve } from 'path';
 
 import { PagedResults } from '../../application/dto';
-import { AppMulterOptions } from '../../upload/imports';
+import { SharedFolderPath } from '../../common/decorators';
 import { PaginationUtil } from '../../utils';
 import { FileDto, FolderDto, GetSharedFolderQueryDto } from '../dto';
 
 @Injectable()
 export class SharedFolderService {
   constructor(
-    private readonly appMulterOptions: AppMulterOptions,
+    @SharedFolderPath()
+    private readonly sharedFolderPath: string,
     private readonly logger: Logger,
   ) {}
 
@@ -62,7 +63,7 @@ export class SharedFolderService {
   }
 
   ensurePath(path: string): string {
-    const fullPath = resolve(this.appMulterOptions.sharedFolderPath, path);
+    const fullPath = resolve(this.sharedFolderPath, path);
 
     if (!existsSync(fullPath)) {
       const errMsg = `Path '${path}' does not exist`;
