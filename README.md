@@ -6,35 +6,196 @@ LAN-FILE-SHARE is an innovative solution designed to streamline file sharing wit
 
 It is a personal project that allows you to share files within a Local Area Network easily using the HTTP protocol.
 
-## DISCLAIMER
+## Table of Contents
 
-The use of this product is under downloader's own risk.
+- [Project setup](#project-setup)
+  - [Install Dependencies](#install-dependencies)
+  - [Environment Variables](#environment-variables)
+- [Compile and run the project](#compile-and-run-the-project)
+- [Run tests](#run-tests)
+- [Develop tests](#develop-tests)
+- [Auto-Format](#auto-format)
+- [Local CI (test script)](#local-ci-test-script)
+- [Mitigate Tech Debt (bumpDependencies script)](#mitigate-tech-debt-bumpdependencies-script)
+- [NestJS Auto-Namespaced Configuration](#nestjs-auto-namespaced-configuration)
+  - [Creating a New Configuration](#creating-a-new-configuration)
+  - [Injecting the Configuration](#injecting-the-configuration)
+- [Beyond Configuration](#beyond-configuration)
+- [Coverage Reports](#coverage-reports)
+- [Generating API Docs](#generating-api-docs)
 
-## Installation
+## Project setup
 
-### previous requirements
+Your project requires `Node.js` and `PNPM` as specified in the package.json `engines`.
+Visit [Node.js](https://nodejs.org/en/) to install the recommended version of Node,
+and [pnpm.io](https://pnpm.io/) for PNPM.
+Once both are installed, run the command below to set up the project.
 
-This project runs on the [NodeJs and Npm](https://nodejs.org/) platform in its LTS version, if you don't have them, install them before continuing.
+### Install Dependencies
 
-To prepare this project, from your preferred terminal, simply run the following command:
+Use the following command to install all required dependencies and set up your development environment.
 
 ```bash
-npm install
+pnpm install
 ```
 
-The Above command, will install all dependencies and build the project.
+### Environment Variables
 
-## Running the app
+This project requires certain environment variables to run properly.
+You can either set them at the system level or copy the **.env.example**
+file to a new **.env** file and define your variables there.
 
-afterwards, from your preferred terminal, simply run the following
-command:
+## Compile and run the project
+
+Below are the scripts for compiling and running the application.
+Use `start:dev` for watch mode during development and `start:prod`
+for a production-ready build.
 
 ```bash
-npm start
+# development watch mode
+pnpm run start:dev
+
+# production mode
+pnpm run start:prod
 ```
 
-when the project has been run you will notice a new folder called: "lan-file-share" inside the Downloads folder of the machine running this project.
+## Run tests
 
-This folder will be used as an exchange area for devices  exchanging files.
+Use the following scripts to verify code quality and functionality.
+`test:static` performs static analysis through linting,
+`test:unit` runs unit tests for individual components,
+and `test:e2e` checks end-to-end workflows.
 
-Once it has started correctly, you will see in the terminal the LAN addresses with which you can access the project and a QR code for a quick link from your mobile or tablet.
+```bash
+# static tests
+pnpm run test:static
+
+# unit tests
+pnpm run test:unit
+
+# e2e tests
+pnpm run test:e2e
+```
+
+## Develop tests
+
+The scripts `watch:UT` and `watch:E2E` run tests in watch mode, which could help to accelerate test-driven development.
+
+```bash
+# Develop Unit Tests
+pnpm run watch:UT
+
+# Develop end-to-end Tests
+pnpm run watch:E2E
+```
+
+## Auto-Format
+
+This project will run code formatting checks. It’s also configured to run automatically via Husky on every commit, ensuring a consistent code style.
+
+## Local CI (test script)
+
+When you run `pnpm run test`, it simulates the checks that would occur in the CI  pipeline, like running:
+
+- Static tests.
+- Unit tests.
+- E2E tests.
+- Build App.
+- Build ApiDocs.
+
+```bash
+# simulate locally the CI process
+pnpm run test
+```
+
+## Mitigate Tech Debt (bumpDependencies script)
+
+This script attempts to update dependencies to mitigate technical debt.
+However, it will only complete successfully if all tests pass, preventing updates that introduce breaking changes.
+
+```bash
+# Attempts to update project's dependencies
+pnpm run bumpDependencies
+```
+
+## NestJS Auto-Namespaced Configuration
+
+This project automatically loads configuration files placed under `/src/config/*.config.ts`.
+Each of these config files follows the structure recommended by
+[NestJS Configuration Docs](https://docs.nestjs.com/techniques/configuration#configuration-namespaces),
+including class-based validation and the `.KEY` property for namespaced injection.
+
+### Creating a New Configuration
+
+1. **Create** a file named `foo.config.ts` inside `/src/config/`.
+2. **Define and export** a class and a validated config (e.g., `FooConfig` and `fooConfig`)
+   **The `@Expose({ name: 'YOUR_ENV_VAR' })` decorator is crucial**
+   because this project uses that name to match against the actual environment variable
+   (e.g., `process.env.YOUR_ENV_VAR`) before validation.
+   You can also use any `class-validator` decorators (e.g., `@IsOptional`, `@IsBoolean`, etc.)
+  to ensure each environment variable meets your constraints:
+
+   ```ts
+   export class FooConfig {
+     //Property to find inside process.env
+     @Expose({ name: 'FOO_VALUE' })
+     // in this case will be process.env.FOO_VALUE
+     @IsNotEmpty()
+     readonly foo: string;
+   }
+
+   // also Export a validated instance
+   export const fooConfig = EnvSchemaLoader.validate(FooConfig);
+   // This exported object will have a `.KEY` property for namespaced injection.
+   ```
+
+### Injecting the Configuration
+
+To access any namespaced config within your services, you must inject the validated config
++using the `.KEY` property. For example:
+
+   ```ts
+   import { Injectable, Inject } from '@nestjs/common';
+   import { fooConfig, FooConfig } from '../config/foo.config'; // <- Adjust path as needed
+
+   @Injectable()
+   export class FooService {
+     constructor(@Inject(fooConfig.KEY) private readonly fooCfg: FooConfig) {}
+
+     getFooValue() {
+       return this.fooCfg.foo;
+     }
+   }
+   ```
+
+## Beyond Configuration
+
+Aside from the namespaced configuration setup, the rest of the development process
+is the same as any other NestJS application. You can integrate various techniques and libraries based on your needs, such as:
+
+- [Prisma Integration](https://docs.nestjs.com/recipes/prisma)
+- [MongoDB](https://docs.nestjs.com/techniques/mongodb)
+- [Cookies & Sessions](https://docs.nestjs.com/recipes/session)
+- [HTTP Module](https://docs.nestjs.com/techniques/http-module)
+- [Task Scheduling](https://docs.nestjs.com/techniques/task-scheduling)
+
+For a full list of NestJS techniques and recipes, check out the
+[official NestJS documentation](https://docs.nestjs.com/).
+
+## Coverage Reports
+
+Coverage results are split into **unit** and **end-to-end** categories. You can find them under:
+
+- Unit Tests
+  - [index.html](coverage/unit/index.html) (human-readable report)
+  - [coverage-final.json](coverage/unit/coverage-final.json) (CI-compatible report)
+- end-to-end Tests
+  - [index.html](coverage/e2e/index.html) (human-readable report)
+  - [coverage-final.json](coverage/e2e/coverage-final.json) (CI-compatible report)
+
+## Generating API Docs
+
+This project includes a script to build OpenAPI specification files.
+By running `pnpm run build:api-docs`, you will generate:
+
+- **[open-api.json](api-docs/open-api.json)**, containing the OpenAPI definition

@@ -1,30 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { existsSync } from 'fs';
 import { mkdir, rename, unlink } from 'fs/promises';
 import { join } from 'path';
 
-import { Logger } from '../../common/decorators';
-import { BadRequest } from '../../common/exceptions';
-import { SoftBatchCreated } from '../../common/interfaces';
-import { UploadPathDto } from '../dto';
-import { UploadManyResponse, UploadResponse } from '../models';
+import { UploadManyResponse, UploadPathDto, UploadResponse } from '../dto';
+import { IncomingFile, SoftBatchCreated } from '../types';
 
 @Injectable()
 export class UploadService {
-  @Logger() private logger: Logger;
+  constructor(private readonly logger: Logger) {}
 
   async batchCreate(
-    files: Express.Multer.File[],
+    files: IncomingFile[],
     opts: UploadPathDto,
   ): Promise<SoftBatchCreated<UploadResponse>> {
-    const filePromises = files.map(file => this.create(file, opts));
+    const filePromises = files.map((file) => this.create(file, opts));
     const settledPromises = await Promise.allSettled(filePromises);
 
     return this.mapSettledToResponse(settledPromises);
   }
 
   async create(
-    file: Express.Multer.File,
+    file: IncomingFile,
     { path, overwrite }: UploadPathDto,
   ): Promise<UploadResponse> {
     const destinyPath = join(file.destination, path);
@@ -38,13 +36,13 @@ export class UploadService {
 
       await unlink(file.path);
 
-      throw new BadRequest(errorMessage);
+      throw new BadRequestException(errorMessage);
     }
 
     await mkdir(destinyPath, { recursive: true });
     await rename(file.path, destinyFilePath);
 
-    const res = new UploadResponse(unixPath);
+    const res = plainToInstance(UploadResponse, { path: unixPath });
 
     this.logger.verbose(res.message);
 
@@ -54,14 +52,17 @@ export class UploadService {
   private mapSettledToResponse(
     promises: PromiseSettledResult<UploadResponse>[],
   ): UploadManyResponse {
-    return promises.reduce((acc, curr, idx) => {
-      if (curr.status === 'fulfilled') {
-        acc.successes[idx] = curr.value;
-      } else {
-        acc.errors[idx] = curr.reason.response?.details[0];
-      }
+    return promises.reduce(
+      (acc, curr, idx) => {
+        if (curr.status === 'fulfilled') {
+          acc.successes[idx] = curr.value;
+        } else {
+          acc.errors[idx] = curr.reason.response.message;
+        }
 
-      return acc;
-    }, new UploadManyResponse());
+        return acc;
+      },
+      plainToInstance(UploadManyResponse, {}),
+    );
   }
 }

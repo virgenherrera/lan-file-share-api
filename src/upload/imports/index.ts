@@ -1,1 +1,1 @@
-export * from './multer-config.import';
+export * from './app-multer-options.import';

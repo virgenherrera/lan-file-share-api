@@ -9,6 +9,7 @@
     "incremental": true,
     "module": "commonjs",
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "./dist",
@@ -16,6 +17,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strictBindCallApply": true,
-    "target": "es2017"
+    "strictNullChecks": true,
+    "target": "ES2021"
   }
 }

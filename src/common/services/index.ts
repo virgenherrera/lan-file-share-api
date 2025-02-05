@@ -1,2 +1,1 @@
-export * from './environment.service';
-export * from './health.service';
+export * from './mime.service';

@@ -1,26 +1,16 @@
-import { BaseConfig } from './jest.config';
+import { JestConfig } from './jest.config';
 
-export const e2eConfig: typeof BaseConfig = {
-  ...BaseConfig,
+export const E2EConfig: typeof JestConfig = {
+  ...JestConfig,
   collectCoverageFrom: [
-    ...BaseConfig.collectCoverageFrom,
-    '!**/environment.service.ts',
-    '!**/dto-validation.pipe.ts',
-    '!**/*.(config|spec).ts',
-    '!(dist|test)/**',
-    '!src/utils/**',
+    'src/**/*.(controller|filter|interceptor|pipe|service|util).ts',
+    '!src/(application|common|utils)/**/*.ts',
   ],
   coverageDirectory: 'coverage/e2e',
-  maxWorkers: 1,
-  rootDir: './',
-  testPathIgnorePatterns: [
-    '/coverage/',
-    '/dist/',
-    '/node_modules/',
-    '/public/',
-    '/src/',
-  ],
-  testRegex: '.e2e-spec.ts$',
+  globalSetup: '<rootDir>/test/setup.ts',
+  globalTeardown: '<rootDir>/test/teardown.ts',
+  rootDir: '.',
+  testRegex: '.*\\.e2e-spec\\.ts$',
 };
 
-export default e2eConfig;
+export default E2EConfig;

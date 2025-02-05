@@ -1,14 +1,10 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, TransformFnParams } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UploadPathDto {
-  static boolTransform({ value }: TransformFnParams) {
-    return ['1', 'true', 'yes'].includes(value);
-  }
-
   @ApiPropertyOptional({
     description: 'An optional path where to store the new file or files.',
+    example: 'images/photos',
     default: '',
   })
   @IsOptional()
@@ -19,7 +15,7 @@ export class UploadPathDto {
     description: 'Whether to overwrite existing files with the same name.',
     default: false,
   })
-  @Transform(UploadPathDto.boolTransform)
+  @IsOptional()
   @IsBoolean()
-  overwrite: boolean;
+  overwrite: boolean = false;
 }

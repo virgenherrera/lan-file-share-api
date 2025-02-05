@@ -1,38 +1,42 @@
-import { applyDecorators, Get, UseGuards } from '@nestjs/common';
+import { applyDecorators, BadRequestException, Get } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiExtraModels,
   ApiOkResponse,
   ApiOperation,
-  ApiQuery,
-  ApiUnauthorizedResponse,
+  getSchemaPath,
 } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '../../auth/guards';
-import { NotFound } from '../../common/exceptions';
-import { GetSharedFolderQueryDto } from '../dto';
-import { SharedFolderRoute } from '../enums';
-import { FolderInfo } from '../models';
+import { PagedResults } from '../../application/dto';
+import { FileDto, FolderDto } from '../dto';
 
 export function GetSharedFolderDocs() {
   return applyDecorators(
-    Get(SharedFolderRoute.sharedFolder),
-    UseGuards(JwtAuthGuard),
+    Get(),
     ApiOperation({
-      summary: `GET ${SharedFolderRoute.sharedFolder}`,
-      description: 'Get folder content defined by path queryParam.',
-    }),
-    ApiQuery({
-      type: GetSharedFolderQueryDto,
-    }),
-    ApiUnauthorizedResponse({
-      description: 'Unauthorized. JWT token is missing or invalid.',
+      description:
+        'Get folder content defined by path queryParams with pagination.',
     }),
     ApiBadRequestResponse({
-      type: NotFound,
+      type: BadRequestException,
     }),
+    ApiExtraModels(PagedResults, FileDto, FolderDto),
     ApiOkResponse({
-      type: FolderInfo,
-      description: `${FolderInfo.name} object containing data about shared folder files and sub-folders.`,
+      description: `${PagedResults.name} object containing data about shared folder files and sub-folders.`,
+      schema: {
+        allOf: [{ $ref: getSchemaPath(PagedResults) }],
+        properties: {
+          rows: {
+            type: 'array',
+            items: {
+              oneOf: [
+                { $ref: getSchemaPath(FileDto) },
+                { $ref: getSchemaPath(FolderDto) },
+              ],
+            },
+          },
+        },
+      },
     }),
   );
 }

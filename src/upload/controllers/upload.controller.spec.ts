@@ -1,42 +1,45 @@
 import { Test, TestingModule } from '@nestjs/testing';
-
+import { MockLoggerProvider } from '../../application/__mocks__';
 import { UploadFileDto } from '../dto';
-
-import {
-  MockMockUploadServiceProvider,
-  mockUploadService,
-} from '../services/__mocks__';
+import { UploadService } from '../services';
 import { UploadController } from './upload.controller';
 
 describe(`UT:${UploadController.name}`, () => {
   const enum should {
     createInstance = 'should create instance Properly.',
-    throwMissingFile = 'Should throw 400 when no file was received.',
     uploadFile = 'Should upload a File.',
     uploadManyFiles = 'Should upload a bunch of Files.',
   }
 
+  const mockUploadService = {
+    batchCreate: jest.fn(),
+    create: jest.fn(),
+  } as const;
+
   let controller: UploadController;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UploadController],
-      providers: [MockMockUploadServiceProvider],
+      providers: [
+        { provide: UploadService, useValue: mockUploadService },
+        MockLoggerProvider,
+      ],
     }).compile();
 
     controller = module.get(UploadController);
   });
 
   it(should.createInstance, () => {
-    expect(controller).not.toBeNull();
+    expect(controller).toBeDefined();
     expect(controller).toBeInstanceOf(UploadController);
   });
+
   it(should.uploadFile, async () => {
-    const mockBody: UploadFileDto = {
+    const mockBody = {
       path: 'fake/path',
-      file: undefined,
       overwrite: false,
-    };
+    } as UploadFileDto;
     const mockFile: any = {};
     const mockData: any = { foo: 'bar' };
 
@@ -44,7 +47,7 @@ describe(`UT:${UploadController.name}`, () => {
 
     const serviceSpy = jest.spyOn(mockUploadService, 'create');
 
-    await expect(controller.uploadOneFile(mockBody, mockFile)).resolves.toBe(
+    await expect(controller.uploadFile(mockFile, mockBody)).resolves.toBe(
       mockData,
     );
     expect(serviceSpy).toHaveBeenCalled();
@@ -59,7 +62,7 @@ describe(`UT:${UploadController.name}`, () => {
 
     const serviceSpy = jest.spyOn(mockUploadService, 'batchCreate');
 
-    await expect(controller.uploadManyFiles(mockBody, mockFiles)).resolves.toBe(
+    await expect(controller.uploadManyFiles(mockFiles, mockBody)).resolves.toBe(
       mockData,
     );
     expect(serviceSpy).toHaveBeenCalled();

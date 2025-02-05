@@ -1,54 +1,29 @@
+import { applyDecorators, Post, UseInterceptors } from '@nestjs/common';
 import {
-  applyDecorators,
-  Post,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import {
-  ApiBadRequestResponse,
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
-  ApiHeader,
   ApiOperation,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-
-import { JwtAuthGuard } from '../../auth/guards';
-import { BadRequest } from '../../common/exceptions';
-import { UploadFilesDto } from '../dto';
-import { UploadRoute } from '../enums';
-import { UploadManyResponse } from '../models';
+import { UploadFilesDto, UploadManyResponse } from '../dto';
+import { RequiredFilesInterceptor } from '../interceptors';
 
 export function PostUploadManyFilesDocs() {
   return applyDecorators(
-    Post(UploadRoute.files),
-    UseGuards(JwtAuthGuard),
+    Post('files'),
     ApiOperation({
-      summary: `POST ${UploadRoute.files}`,
       description:
         'an endpoint to gracefully Upload many files and share it across your LAN.',
     }),
     UseInterceptors(
-      FilesInterceptor('file[]', 50, {
+      RequiredFilesInterceptor('files[]', 100, {
         preservePath: true,
-        limits: { files: 50 },
+        limits: { files: 100 },
       }),
     ),
     ApiConsumes('multipart/form-data'),
-    ApiHeader({
-      name: 'Authorization',
-      description: 'Bearer token',
-    }),
     ApiBody({
       type: UploadFilesDto,
-    }),
-    ApiUnauthorizedResponse({
-      description: 'Unauthorized. JWT token is missing or invalid.',
-    }),
-    ApiBadRequestResponse({
-      type: BadRequest,
     }),
     ApiCreatedResponse({
       type: UploadManyResponse,

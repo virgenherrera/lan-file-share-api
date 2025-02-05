@@ -5,11 +5,10 @@
     "dbaeumer.vscode-eslint",
     "eamodio.gitlens",
     "EditorConfig.EditorConfig",
-    "esbenp.prettier-vscode",
     "kisstkondoros.vscode-codemetrics",
     "redhat.vscode-yaml",
     "streetsidesoftware.code-spell-checker",
     "techer.open-in-browser",
-    "usernamehw.errorlens",
+    "usernamehw.errorlens"
   ]
 }

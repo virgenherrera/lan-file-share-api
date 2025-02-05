@@ -1,3 +1,13 @@
-export * from './core/get-health.matcher';
-export * from './shared-folder/folder-info.matcher';
-export * from './shared-folder/get-downloadable-file-headers';
+export const FileDtoMatcher = expect.objectContaining({
+  type: 'file',
+  fileName: expect.any(String),
+  path: expect.any(String),
+  size: expect.any(String),
+  createdAt: expect.any(String),
+  updatedAt: expect.any(String),
+});
+
+export const FolderDtoMatcher = expect.objectContaining({
+  type: 'folder',
+  name: expect.any(String),
+});

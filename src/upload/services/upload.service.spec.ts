@@ -1,10 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import * as fs from 'fs';
 
-import { BadRequest } from '../../common/exceptions';
-import { MockLoggerProvider } from '../../common/services/__mocks__';
-import { UploadPathDto } from '../dto';
-import { UploadResponse } from '../models';
+import { BadRequestException } from '@nestjs/common';
+import { MockLoggerProvider } from '../../application/__mocks__';
+import { UploadPathDto, UploadResponse } from '../dto';
 import { UploadService } from './upload.service';
 
 describe(`UT:${UploadService.name}`, () => {
@@ -17,9 +16,9 @@ describe(`UT:${UploadService.name}`, () => {
     overwriteBatchUploadWhenSomeFilesExistAndOverwriteIsTrue = 'should overwrite batch upload when some files exist and overwrite is true.',
   }
 
-  let service: UploadService = null;
+  let service: UploadService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [MockLoggerProvider, UploadService],
     }).compile();
@@ -94,7 +93,7 @@ describe(`UT:${UploadService.name}`, () => {
 
     await expect(
       service.create(mockFile, mockUploadPathDto),
-    ).rejects.toBeInstanceOf(BadRequest);
+    ).rejects.toBeInstanceOf(BadRequestException);
 
     expect(existsSyncSpy).toHaveBeenCalledWith(expect.any(String));
     expect(unlinkSpy).toHaveBeenCalledWith(mockFile.path);

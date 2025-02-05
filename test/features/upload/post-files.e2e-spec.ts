@@ -1,28 +1,25 @@
 import { NestApplication } from '@nestjs/core';
-import { UploadRoute } from '../../../src/upload/enums';
-import { UploadManyResponse } from '../../../src/upload/models';
+import { UploadManyResponse } from '../../../src/upload/dto';
 import {
-  AuthUtil,
   TestContext,
   dropSharedFiles,
   mockSharedFiles as existentFiles,
   initSharedFiles,
 } from '../../utils';
 
-const enum should {
-  initTestContext = 'Should test Context be properly initialized.',
-  throw401 = 'Should GET 401 when a request with no token occurs.',
-  throwPostFile = `Should respond with 400 when calling the endpoint without a file.`,
-  postFiles = `Should POST many files and get proper info about success and failures preserving post order.`,
-}
-
-describe(`e2e: POST${UploadRoute.files}`, () => {
+const API_PATH = '/upload/files';
+describe(`e2e: POST${API_PATH}`, () => {
+  const enum should {
+    initTestContext = 'Should test Context be properly initialized.',
+    throwPostFile = `Should respond with 400 when calling the endpoint without a file.`,
+    postFiles = `Should POST many files and get proper info about success and failures preserving post order.`,
+  }
   const nonExistentFiles = [
     { filename: `fake_file_1_${Date.now()}.txt`, content: 'mock file content' },
     { filename: `fake_file_2_${Date.now()}.txt`, content: 'mock file content' },
   ];
 
-  let testCtx: TestContext = null;
+  let testCtx: TestContext;
 
   beforeAll(async () => {
     testCtx = await TestContext.getInstance();
@@ -34,45 +31,32 @@ describe(`e2e: POST${UploadRoute.files}`, () => {
     await dropSharedFiles(testCtx);
   });
 
-  it(should.initTestContext, async () => {
-    expect(testCtx).not.toBeNull();
-    expect(testCtx.request).not.toBeNull();
+  it(should.initTestContext, () => {
+    expect(testCtx).toBeDefined();
+    expect(testCtx.request).toBeDefined();
     expect(testCtx.app).toBeInstanceOf(NestApplication);
   });
 
-  it(should.throw401, async () => {
-    const { status, body } = await testCtx.request.post(UploadRoute.files);
-
-    expect(status).toBe(401);
-    expect(body).toMatchObject({
-      message: 'Unauthorized',
-    });
-  });
-
   it(should.throwPostFile, async () => {
-    const accessToken = await AuthUtil.getToken(testCtx);
-    const { status, body } = await testCtx.request
-      .post(UploadRoute.files)
-      .set(accessToken);
+    const { status, body } = await testCtx.request.post(API_PATH);
 
     expect(status).toBe(400);
     expect(body).toMatchObject({
-      code: 'bad-request-error',
-      message: 'Bad Request',
-      details: ['No files uploaded.'],
+      message: `No file was received in field: "files[]"`,
+      error: 'Bad Request',
+      statusCode: 400,
     });
   });
 
   it(should.postFiles, async () => {
-    const accessToken = await AuthUtil.getToken(testCtx);
     const matcher: Record<keyof UploadManyResponse, any> = {
       successes: {
         0: {
-          message: `successfully uploaded file: '${nonExistentFiles[0].filename}'`,
+          message: `successfully uploaded file`,
           path: nonExistentFiles[0].filename,
         },
         2: {
-          message: `successfully uploaded file: '${nonExistentFiles[1].filename}'`,
+          message: `successfully uploaded file`,
           path: nonExistentFiles[1].filename,
         },
       },
@@ -82,25 +66,24 @@ describe(`e2e: POST${UploadRoute.files}`, () => {
       },
     };
     const { status, body } = await testCtx.request
-      .post(UploadRoute.files)
-      .set(accessToken)
+      .post(API_PATH)
       .attach(
-        'file[]',
+        'files[]',
         Buffer.from(nonExistentFiles[0].content),
         nonExistentFiles[0].filename,
       )
       .attach(
-        'file[]',
+        'files[]',
         Buffer.from(existentFiles[0].content),
         existentFiles[0].filename,
       )
       .attach(
-        'file[]',
+        'files[]',
         Buffer.from(nonExistentFiles[1].content),
         nonExistentFiles[1].filename,
       )
       .attach(
-        'file[]',
+        'files[]',
         Buffer.from(existentFiles[1].content),
         existentFiles[1].filename,
       );

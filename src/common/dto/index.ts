@@ -1,1 +1,1 @@
-export * from './get-health-query.dto';
+export * from './mime.dto';

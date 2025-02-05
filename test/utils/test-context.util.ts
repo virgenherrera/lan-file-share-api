@@ -1,52 +1,63 @@
 import { INestApplication } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import * as supertest from 'supertest';
+
 import { AppModule } from '../../src/app.module';
-import { EnvironmentService } from '../../src/common/services';
-import {
-  MockEnvironmentProvider,
-  mockEnvironmentService,
-} from '../../src/common/services/__mocks__';
-import { mockConfigService } from './e2e-env.util';
 
 export class TestContext {
-  private static instance: TestContext = null;
+  private static instance: TestContext;
 
   static async getInstance() {
     if (TestContext.instance) return TestContext.instance;
 
     const instance = new TestContext();
 
-    TestContext.instance = await instance.initContext();
+    try {
+      TestContext.instance = await instance.initContext();
+    } catch (error) {
+      console.error('Failed to initialize test context:', error);
+      throw error;
+    }
 
     return TestContext.instance;
   }
 
-  app: INestApplication = null;
-  request: ReturnType<typeof supertest> = null;
+  static async destruct() {
+    if (TestContext.instance) await TestContext.instance.destroyContext();
+  }
+
+  private _app: INestApplication;
+  private _request: ReturnType<typeof supertest>;
+
+  get app() {
+    return this._app;
+  }
+
+  get request() {
+    return this._request;
+  }
 
   private async initContext() {
+    console.log(`${'\n'}Initializing E2E ${this.constructor.name}`);
+
     const testingModule = await Test.createTestingModule({
       imports: [AppModule],
-    })
-      .overrideProvider(EnvironmentService)
-      .useValue(mockEnvironmentService)
-      .overrideProvider(ConfigService)
-      .useValue(mockConfigService)
-      .overrideProvider(MockEnvironmentProvider.provide)
-      .useValue(MockEnvironmentProvider.useValue)
-      .compile();
+    }).compile();
 
-    this.app = testingModule.createNestApplication();
+    this._app = testingModule.createNestApplication();
 
-    await this.app.init();
+    await this._app.init();
 
-    this.request = supertest(this.app.getHttpServer());
-
-    Object.freeze(this);
-    Object.seal(this);
+    this._request = supertest(this._app.getHttpServer());
 
     return this;
+  }
+
+  private async destroyContext() {
+    console.log(`${'\n'}destroying E2E ${this.constructor.name}`);
+
+    if (this._app) await this._app.close();
+
+    Object.assign(this, { _app: null, _request: null });
   }
 }
