@@ -15,7 +15,7 @@ import { FileDto, FolderDto, GetSharedFolderQueryDto } from '../dto';
 @Injectable()
 export class SharedFolderService {
   @Logger() private readonly logger: Logger;
-  private readonly filesToIgnore = new Set([
+  private readonly filesToIgnore = [
     'desktop.ini',
     'thumbs.db',
     '.DS_Store',
@@ -24,7 +24,13 @@ export class SharedFolderService {
     '.Spotlight-V100',
     '.Trashes',
     '.localized',
-  ]);
+  ];
+  private readonly patternFilesToIgnore = new RegExp(
+    `^(?:${this.filesToIgnore
+      .map((str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|')})$`,
+    'i',
+  );
 
   constructor(
     @SharedFolderPath()
@@ -39,7 +45,7 @@ export class SharedFolderService {
     const fullPath = this.ensurePath(query.path);
     const directoryRawItems = await readdir(fullPath);
     const directoryItems = directoryRawItems.filter(
-      (el) => !this.filesToIgnore.has(el),
+      (el) => !this.patternFilesToIgnore.test(el),
     );
     const { length: totalRecords } = directoryItems;
     const startIndex = (query.page - 1) * query.perPage;
@@ -59,7 +65,7 @@ export class SharedFolderService {
       const urlPath = join(query.path, parsedPath.base).replace(/\\/g, '/');
 
       if (itemStats.isDirectory()) {
-        results.push({ type: 'folder', name: urlPath });
+        results.push({ type: 'folder', name: parsedPath.name });
       } else {
         const element: FileDto = {
           type: 'file',

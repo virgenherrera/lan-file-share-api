@@ -89,7 +89,7 @@ describe(`UT:${SharedFolderService.name}`, () => {
       }),
       expect.objectContaining({
         type: 'folder',
-        name: 'mock-path/folder-a',
+        name: 'folder-a',
       }),
     ]);
 
