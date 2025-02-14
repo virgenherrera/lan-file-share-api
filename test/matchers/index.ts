@@ -1,6 +1,7 @@
 export const FileDtoMatcher = expect.objectContaining({
   type: 'file',
   fileName: expect.any(String),
+  mimeType: expect.any(String),
   path: expect.any(String),
   size: expect.any(String),
   createdAt: expect.any(String),

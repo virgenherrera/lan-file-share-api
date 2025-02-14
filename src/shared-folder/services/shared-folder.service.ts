@@ -9,6 +9,7 @@ import { join, parse as pathParse, resolve } from 'path';
 
 import { PagedResults } from '../../application/dto';
 import { Logger, SharedFolderPath } from '../../common/decorators';
+import { MimeService } from '../../common/services';
 import { PaginationUtil } from '../../utils';
 import { FileDto, FolderDto, GetSharedFolderQueryDto } from '../dto';
 
@@ -35,6 +36,7 @@ export class SharedFolderService {
   constructor(
     @SharedFolderPath()
     private readonly sharedFolderPath: string,
+    private readonly mimeService: MimeService,
   ) {}
 
   async getPagedFolderInfo(
@@ -62,7 +64,6 @@ export class SharedFolderService {
       const itemPath = join(fullPath, item);
       const itemStats = await this.parseFileStats(itemPath);
       const parsedPath = pathParse(itemPath);
-      const urlPath = join(query.path, parsedPath.base).replace(/\\/g, '/');
 
       if (itemStats.isDirectory()) {
         results.push({ type: 'folder', name: parsedPath.name });
@@ -70,10 +71,11 @@ export class SharedFolderService {
         const element: FileDto = {
           type: 'file',
           fileName: parsedPath.base,
-          path: urlPath,
+          path: join(query.path, parsedPath.base).replace(/\\/g, '/'),
           createdAt: itemStats.birthtime,
           updatedAt: itemStats.mtime,
           size: this.byteLengthHumanize(itemStats.size),
+          mimeType: this.mimeService.getMime(parsedPath.ext),
         };
 
         results.push(element);

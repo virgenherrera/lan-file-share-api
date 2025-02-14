@@ -14,6 +14,12 @@ export class FileDto {
   fileName: string;
 
   @ApiProperty({
+    example: 'image/jpeg',
+    description: 'The mime-type of the file.',
+  })
+  mimeType: null | string;
+
+  @ApiProperty({
     example: 'Documents/report.pdf',
     description: 'Path where the file is located.',
   })

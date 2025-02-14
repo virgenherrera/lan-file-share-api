@@ -6,6 +6,7 @@ import * as path from 'path';
 import { MockLoggerProvider } from '../../application/__mocks__';
 import { PagedResults } from '../../application/dto';
 import { SharedFolderPathProvider } from '../../common/providers';
+import { MimeService } from '../../common/services';
 import { GetSharedFolderQueryDto } from '../dto';
 import { SharedFolderService } from './shared-folder.service';
 
@@ -17,6 +18,10 @@ describe(`UT:${SharedFolderService.name}`, () => {
     throwForNonExistentPath = 'should throw NotFoundException for non-existent path.',
   }
 
+  const mockMimeService = {
+    getMime: jest.fn().mockReturnValue('mock/mime-type'),
+  };
+
   let service: SharedFolderService;
 
   beforeAll(async () => {
@@ -26,6 +31,10 @@ describe(`UT:${SharedFolderService.name}`, () => {
         {
           provide: SharedFolderPathProvider.provide,
           useValue: 'mock-path',
+        },
+        {
+          provide: MimeService,
+          useValue: mockMimeService,
         },
         SharedFolderService,
       ],
